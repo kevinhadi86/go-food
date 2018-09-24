@@ -103,62 +103,40 @@ describe Food do
         end
     end
     it "is valid with numeric price greater or equal to 0.01" do
-        food = Food.new(
-          name: "Nasi Uduk",
-          description: "Betawi style steamed rice cooked in coconut milk. Delicious!",
-          price: 0.01
-        )
-    
-        expect(food).to be_valid
+        expect(build(:food, price: 0.01)).to be_valid
     end
-    it "is invalid with non numeric price" do
-        food = Food.new(
-          name: "Nasi Uduk",
-          description: "Betawi style steamed rice cooked in coconut milk. Delicious!",
-          price: "sepuluh ribu"
-        )
-        food.valid?
     
+    it "is invalid without numeric price" do
+        food = build(:food, price: "abc")
+        food.valid?
         expect(food.errors[:price]).to include("is not a number")
     end
     it "is valid with image_url ending with '.gif', '.jpg', or '.png'" do
-        food = Food.new(
-          name: "Nasi Uduk",
-          description: "Betawi style steamed rice cooked in coconut milk. Delicious!",
-          image_url: "Nasi Uduk.jpg",
-          price: 0.01
-        )
-    
-        expect(food).to be_valid
+        expect(build(:food, image_url: "food.jpg")).to be_valid
     end
-    it "is invalid with image_url ending not with '.gif', '.jpg', or '.png'" do
-        food = Food.new(
-          name: "Nasi Uduk",
-          description: "Betawi style steamed rice cooked in coconut milk. Delicious!",
-          image_url: "Nasi Uduk.csv",
-          price: 0.01
-        )
-        food.valid?
     
+    it "is invalid with image_url ending not with '.gif', '.jpg', or '.png'" do
+        food = build(:food, image_url: "food.csv")
+        food.valid?
         expect(food.errors[:image_url]).to include("must be a URL for GIF, JPG or PNG image.")
     end
-    describe "invalid without name or description" do
+    describe "filter name by letter" do
         before :each do
-          @food = Food.new(
-            name: nil,
-            description: nil,
-            price: 10000.0
-          )
-        end
-        
-        it "is invalid without name" do
-          @food.valid?
-          expect(@food.errors[:name]).to include("can't be blank")
+          @food1 = create(:food, name: "Nasi Uduk")
+          @food2 = create(:food, name: "Kerak Telor")
+          @food3 = create(:food, name: "Nasi Semur Jengkol")
         end
     
-        it "is invalid without description" do
-          @food.valid?
-          expect(@food.errors[:description]).to include("can't be blank")
+        context "with matching letters" do
+          it "returns a sorted array of results that match" do
+            expect(Food.by_letter("N")).to eq([@food3, @food1])
+          end
+        end
+    
+        context "with non-matching letters" do
+          it "omits results that do not match" do
+            expect(Food.by_letter("N")).not_to include(@food2)
+          end
         end
     end
 end
