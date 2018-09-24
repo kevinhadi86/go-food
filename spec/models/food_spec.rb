@@ -117,4 +117,63 @@ describe Food do
             end
         end
     end
+    it "is valid with numeric price greater or equal to 0.01" do
+        food = Food.new(
+          name: "Nasi Uduk",
+          description: "Betawi style steamed rice cooked in coconut milk. Delicious!",
+          price: 0.01
+        )
+    
+        expect(food).to be_valid
+    end
+    it "is invalid with non numeric price" do
+        food = Food.new(
+          name: "Nasi Uduk",
+          description: "Betawi style steamed rice cooked in coconut milk. Delicious!",
+          price: "sepuluh ribu"
+        )
+        food.valid?
+    
+        expect(food.errors[:price]).to include("is not a number")
+    end
+    it "is valid with image_url ending with '.gif', '.jpg', or '.png'" do
+        food = Food.new(
+          name: "Nasi Uduk",
+          description: "Betawi style steamed rice cooked in coconut milk. Delicious!",
+          image_url: "Nasi Uduk.jpg",
+          price: 0.01
+        )
+    
+        expect(food).to be_valid
+    end
+    it "is invalid with image_url ending not with '.gif', '.jpg', or '.png'" do
+        food = Food.new(
+          name: "Nasi Uduk",
+          description: "Betawi style steamed rice cooked in coconut milk. Delicious!",
+          image_url: "Nasi Uduk.csv",
+          price: 0.01
+        )
+        food.valid?
+    
+        expect(food.errors[:image_url]).to include("must be a URL for GIF, JPG or PNG image.")
+    end
+    describe "invalid without name or description" do
+        before :each do
+          @food = Food.new(
+            name: nil,
+            description: nil,
+            price: 10000.0
+          )
+        end
+        
+        it "is invalid without name" do
+          @food.valid?
+          expect(@food.errors[:name]).to include("can't be blank")
+        end
+    
+        it "is invalid without description" do
+          @food.valid?
+          expect(@food.errors[:description]).to include("can't be blank")
+        end
+    end
 end
